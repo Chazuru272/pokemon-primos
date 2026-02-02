@@ -26,7 +26,7 @@ if "Shiny" not in df.columns:
 with st.sidebar:
     st.header("👤 ¿Quién eres hoy?")
     # Agregamos Yahir (Admin) a la lista
-    usuario_actual = st.selectbox("Identifícate:", ["Invitado", "Yahir (Admin)", "Yahir", "Carlos", "Pepe", "Angel"])
+    usuario_actual = st.selectbox("Identifícate:", ["Invitado", "Carlos (Admin)", "Yahir", "Carlos", "Pepe", "Angel"])
     
     es_admin = (usuario_actual == "Yahir (Admin)")
     
