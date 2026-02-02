@@ -22,13 +22,22 @@ except:
 if "Shiny" not in df.columns:
     df["Shiny"] = "No"
 
-# --- SIDEBAR (IDENTIFICACIÓN Y ADMIN) ---
+# --- SIDEBAR (IDENTIFICACIÓN Y SEGURIDAD) ---
 with st.sidebar:
     st.header("👤 ¿Quién eres hoy?")
-    # Agregamos Yahir (Admin) a la lista
     usuario_actual = st.selectbox("Identifícate:", ["Invitado", "Carlos (Admin)", "Yahir", "Carlos", "Pepe", "Angel"])
     
-    es_admin = (usuario_actual == "Carlos (Admin)")
+    es_admin = False
+    
+    # Si elige ser Admin, le pedimos la palabra secreta
+    if usuario_actual == "Carlos (Admin)":
+        password = st.text_input("Introduce la palabra secreta:", type="password")
+        if password == "1234": # <--- CAMBIA "1234" POR TU CONTRASEÑA
+            es_admin = True
+            st.success("Acceso de Administrador concedido")
+        else:
+            if password != "":
+                st.error("Contraseña incorrecta")
     
     st.divider()
     st.header("🎮 Progreso")
