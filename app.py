@@ -8,7 +8,7 @@ st.title("🏆 Dashboard de Entrenadores: Rubí Omega")
 # --- DEFINICIÓN DE LÍMITES (LEVEL CAPS HOENN) ---
 # Ajustados con el 15% de dificultad extra para Rubí Omega
 LEVEL_CAPS = {
-    "1. Petra (Roca)": 16,
+    "1. Petra (Roca)": 17,
     "2. Marcial (Lucha)": 19,
     "3. Eriko (Eléctrico)": 25,
     "4. Candela (Fuego)": 33,
