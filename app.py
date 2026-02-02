@@ -7,7 +7,7 @@ st.title("🏆 Dashboard de Entrenadores: Rubí Omega")
 
 # --- LEVEL CAPS ---
 LEVEL_CAPS = {
-    "1. Petra (Roca)": 16, "2. Marcial (Lucha)": 19, "3. Eriko (Eléctrico)": 25,
+    "1. Petra (Roca)": 17, "2. Marcial (Lucha)": 20, "3. Eriko (Eléctrico)": 25,
     "4. Candela (Fuego)": 33, "5. Norman (Normal)": 35, "6. Alana (Volador)": 40,
     "7. Vito y Leti (Psíquico)": 52, "8. Plubio (Agua)": 55, "Liga Pokémon / Máximo": 65
 }
