@@ -1,39 +1,41 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime
 
 # --- CONFIGURACIÓN DE LA PÁGINA ---
 st.set_page_config(page_title="Panteón Pokémon de los Primos", layout="wide")
 st.title("🏆 Dashboard de Entrenadores Alola")
 
-# --- EL CEREBRO (Base de datos local) ---
-# Creamos un archivo para guardar los datos si no existe
+# --- EL CEREBRO (Cargar Datos) ---
 try:
     df = pd.read_csv("partida_pokemon.csv")
 except:
-    # Si es la primera vez, creamos la libreta vacía
-    df = pd.DataFrame(columns=["Primo", "Pokemon", "Nivel", "Estado"])
+    # Creamos la libreta con las columnas nuevas (Shiny)
+    df = pd.DataFrame(columns=["Primo", "Pokemon", "Nivel", "Estado", "Shiny"])
     df.to_csv("partida_pokemon.csv", index=False)
 
-# --- FORMULARIO PARA AGREGAR POKÉMON ---
-# Esto es como el "buzón" donde tus primos meten sus datos
+# Si actualizaste el código pero ya tenías un archivo viejo, esto agrega la columna Shiny
+if "Shiny" not in df.columns:
+    df["Shiny"] = "No"
+
+# --- REGISTRAR NUEVO POKÉMON (Sidebar) ---
 with st.sidebar:
     st.header("📝 Registrar Nuevo Pokémon")
     with st.form("nuevo_pokemon"):
         nombre_primo = st.selectbox("¿Quién eres?", ["Yahir", "Carlos", "Pepe", "Angel"])
-        nombre_pkmn = st.text_input("Nombre del Pokémon (Ej: Pikachu)").lower().strip()
-        nivel_pkmn = st.number_input("Nivel", min_value=1, max_value=100, value=5)
-        estado_pkmn = st.radio("Estado", ["Vivo", "Muerto"])
+        nombre_pkmn = st.text_input("Nombre del Pokémon").lower().strip()
+        nivel_pkmn = st.number_input("Nivel inicial", min_value=1, max_value=100, value=5)
+        es_shiny = st.checkbox("¿Es Shiny? ✨")
         
-        botón = st.form_submit_button("¡Registrar en la Web!")
+        botón = st.form_submit_button("¡Registrar!")
         
-        if botón:
-            # Aquí Python escribe en la libreta
-            nuevo_dato = pd.DataFrame([[nombre_primo, nombre_pkmn, nivel_pkmn, estado_pkmn]], 
-                                     columns=["Primo", "Pokemon", "Nivel", "Estado"])
+        if botón and nombre_pkmn:
+            shiny_val = "Sí" if es_shiny else "No"
+            nuevo_dato = pd.DataFrame([[nombre_primo, nombre_pkmn, nivel_pkmn, "Vivo", shiny_val]], 
+                                     columns=["Primo", "Pokemon", "Nivel", "Estado", "Shiny"])
             df = pd.concat([df, nuevo_dato], ignore_index=True)
             df.to_csv("partida_pokemon.csv", index=False)
-            st.success(f"¡{nombre_pkmn} registrado con éxito!")
+            st.success(f"¡{nombre_pkmn} registrado!")
+            st.rerun()
 
 # --- MOSTRAR LOS EQUIPOS ---
 st.subheader("👥 Equipos Actuales")
@@ -43,37 +45,60 @@ cols = st.columns(len(primos_lista))
 for i, p in enumerate(primos_lista):
     with cols[i]:
         st.markdown(f"### 🚩 {p}")
-        # Buscamos solo los que están vivos para el equipo actual
         equipo = df[(df['Primo'] == p) & (df['Estado'] == 'Vivo')]
         
         if equipo.empty:
-            st.write("No hay Pokémon vivos aún...")
+            st.write("No hay Pokémon vivos...")
         
         for index, row in equipo.iterrows():
-            # URL de la imagen (la estampa del álbum)
-            url = f"https://img.pokemondb.net/sprites/omega-ruby-alpha-sapphire/dex/normal/{row['Pokemon']}.png"
-            st.image(url, width=80)
-            st.write(f"**{row['Pokemon'].capitalize()}** - Lvl {row['Nivel']}")
-            st.divider()
+            # CAJITA INTERACTIVA
+            with st.container(border=True):
+                # Foto: Si es shiny, busca la carpeta shiny, si no, la normal
+                folder = "shiny" if row['Shiny'] == "Sí" else "normal"
+                url = f"https://img.pokemondb.net/sprites/omega-ruby-alpha-sapphire/dex/{folder}/{row['Pokemon']}.png"
+                
+                c1, c2 = st.columns([1, 2])
+                with c1:
+                    st.image(url)
+                with c2:
+                    st.write(f"**{row['Pokemon'].capitalize()}**")
+                    st.write(f"Lvl: {row['Nivel']}")
 
-# --- EL CEMENTERIO (Los caídos) ---
+                # BOTONES DE ACCIÓN (Picarle al Pokémon)
+                b1, b2, b3 = st.columns(3)
+                with b1:
+                    if st.button("🆙", key=f"up_{index}", help="Subir nivel"):
+                        df.at[index, 'Nivel'] += 1
+                        df.to_csv("partida_pokemon.csv", index=False)
+                        st.rerun()
+                with b2:
+                    if st.button("✨", key=f"sh_{index}", help="Volver Shiny"):
+                        df.at[index, 'Shiny'] = "Sí"
+                        df.to_csv("partida_pokemon.csv", index=False)
+                        st.rerun()
+                with b3:
+                    if st.button("💀", key=f"die_{index}", help="Murió"):
+                        df.at[index, 'Estado'] = "Muerto"
+                        df.to_csv("partida_pokemon.csv", index=False)
+                        st.rerun()
+
+# --- CEMENTERIO ---
 st.markdown("---")
 st.subheader("🪦 El Cementerio (Caídos en combate)")
 muertos = df[df['Estado'] == 'Muerto']
 if not muertos.empty:
-    filas_muertos = st.columns(5)
-    for idx, row in muertos.iterrows():
-        with filas_muertos[idx % 5]:
-            url = f"https://img.pokemondb.net/sprites/omega-ruby-alpha-sapphire/dex/normal/{row['Pokemon']}.png"
-            # Ponemos la imagen un poco más pequeña y el nombre tachado
-            st.image(url, width=60)
+    filas_muertos = st.columns(6)
+    for idx, (original_idx, row) in enumerate(muertos.iterrows()):
+        with filas_muertos[idx % 6]:
+            url_dead = f"https://img.pokemondb.net/sprites/omega-ruby-alpha-sapphire/dex/normal/{row['Pokemon']}.png"
+            st.image(url_dead, width=60)
             st.write(f"~~{row['Pokemon'].capitalize()}~~")
             st.caption(f"De: {row['Primo']}")
-# --- BOTÓN PARA BORRAR TODO (Solo para el administrador) ---
+
+# --- BOTÓN DE LIMPIEZA TOTAL ---
 with st.sidebar:
     st.divider()
-    if st.button("⚠️ Borrar toda la base de datos"):
-        # Esto crea una libreta nueva vacía, borrando todo lo anterior
-        df_vacio = pd.DataFrame(columns=["Primo", "Pokemon", "Nivel", "Estado"])
+    if st.button("⚠️ Borrar todo"):
+        df_vacio = pd.DataFrame(columns=["Primo", "Pokemon", "Nivel", "Estado", "Shiny"])
         df_vacio.to_csv("partida_pokemon.csv", index=False)
-        st.warning("Se han borrado todos los registros. Reinicia la página.")
+        st.rerun()
