@@ -20,7 +20,7 @@ except:
 with st.sidebar:
     st.header("📝 Registrar Nuevo Pokémon")
     with st.form("nuevo_pokemon"):
-        nombre_primo = st.selectbox("¿Quién eres?", ["Tú", "Primo 1", "Primo 2", "Primo 3"])
+        nombre_primo = st.selectbox("¿Quién eres?", ["Yahir", "Carlos", "Pepe", "Angel"])
         nombre_pkmn = st.text_input("Nombre del Pokémon (Ej: Pikachu)").lower().strip()
         nivel_pkmn = st.number_input("Nivel", min_value=1, max_value=100, value=5)
         estado_pkmn = st.radio("Estado", ["Vivo", "Muerto"])
