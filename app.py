@@ -28,7 +28,7 @@ with st.sidebar:
     # Agregamos Yahir (Admin) a la lista
     usuario_actual = st.selectbox("Identifícate:", ["Invitado", "Carlos (Admin)", "Yahir", "Carlos", "Pepe", "Angel"])
     
-    es_admin = (usuario_actual == "Yahir (Admin)")
+    es_admin = (usuario_actual == "Carlos (Admin)")
     
     st.divider()
     st.header("🎮 Progreso")
