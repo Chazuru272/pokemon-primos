@@ -37,7 +37,7 @@ with st.sidebar:
 
 # --- MOSTRAR LOS EQUIPOS ---
 st.subheader("👥 Equipos Actuales")
-primos_lista = ["Tú", "Primo 1", "Primo 2", "Primo 3"]
+primos_lista = ["Yahir", "Carlos", "Pepe", "Angel"]
 cols = st.columns(len(primos_lista))
 
 for i, p in enumerate(primos_lista):
@@ -69,3 +69,11 @@ if not muertos.empty:
             st.image(url, width=60)
             st.write(f"~~{row['Pokemon'].capitalize()}~~")
             st.caption(f"De: {row['Primo']}")
+# --- BOTÓN PARA BORRAR TODO (Solo para el administrador) ---
+with st.sidebar:
+    st.divider()
+    if st.button("⚠️ Borrar toda la base de datos"):
+        # Esto crea una libreta nueva vacía, borrando todo lo anterior
+        df_vacio = pd.DataFrame(columns=["Primo", "Pokemon", "Nivel", "Estado"])
+        df_vacio.to_csv("partida_pokemon.csv", index=False)
+        st.warning("Se han borrado todos los registros. Reinicia la página.")
