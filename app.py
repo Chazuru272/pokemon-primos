@@ -109,3 +109,9 @@ if not muertos.empty:
             st.image(f"https://img.pokemondb.net/sprites/omega-ruby-alpha-sapphire/dex/normal/{row['Pokemon']}.png", width=60)
             st.write(f"~~{row['Pokemon'].capitalize()}~~")
             st.caption(f"De: {row['Primo']}")
+with st.sidebar:
+    st.divider()
+    if st.button("⚠️ Borrar todo"):
+        df_vacio = pd.DataFrame(columns=["Primo", "Pokemon", "Nivel", "Estado", "Shiny"])
+        df_vacio.to_csv("partida_pokemon.csv", index=False)
+        st.rerun()           
