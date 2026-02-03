@@ -135,3 +135,70 @@ if not muertos.empty:
                     df.at[orig_idx, 'Estado'] = 'Vivo'
                     df.to_csv("partida_pokemon.csv", index=False)
                     st.rerun()
+                    
+# --- CALCULADORA DE TIPOS ---
+st.markdown("---")
+st.header("🧮 Calculadora de Debilidades")
+
+# Definimos la tabla de tipos (Atacante -> Defensor)
+tablas_tipos = {
+    "Normal": {"Roca": 0.5, "Fantasma": 0, "Acero": 0.5},
+    "Fuego": {"Fuego": 0.5, "Agua": 0.5, "Planta": 2, "Hielo": 2, "Bicho": 2, "Roca": 0.5, "Dragón": 0.5, "Acero": 2},
+    "Agua": {"Fuego": 2, "Agua": 0.5, "Planta": 0.5, "Tierra": 2, "Roca": 2, "Dragón": 0.5},
+    "Planta": {"Fuego": 0.5, "Agua": 2, "Planta": 0.5, "Veneno": 0.5, "Tierra": 2, "Volador": 0.5, "Bicho": 0.5, "Roca": 2, "Dragón": 0.5, "Acero": 0.5},
+    "Eléctrico": {"Agua": 2, "Planta": 0.5, "Eléctrico": 0.5, "Tierra": 0, "Volador": 2, "Dragón": 0.5},
+    "Hielo": {"Fuego": 0.5, "Agua": 0.5, "Planta": 2, "Hielo": 0.5, "Tierra": 2, "Volador": 2, "Dragón": 2, "Acero": 0.5},
+    "Lucha": {"Normal": 2, "Hielo": 2, "Veneno": 0.5, "Volador": 0.5, "Psíquico": 0.5, "Bicho": 0.5, "Roca": 2, "Fantasma": 0, "Oscuro": 2, "Acero": 2, "Hada": 0.5},
+    "Veneno": {"Planta": 2, "Veneno": 0.5, "Tierra": 0.5, "Roca": 0.5, "Fantasma": 0.5, "Acero": 0, "Hada": 2},
+    "Tierra": {"Fuego": 2, "Planta": 0.5, "Eléctrico": 2, "Veneno": 2, "Volador": 0, "Bicho": 0.5, "Acero": 2},
+    "Volador": {"Planta": 2, "Eléctrico": 0.5, "Lucha": 2, "Bicho": 2, "Roca": 0.5, "Acero": 0.5},
+    "Psíquico": {"Lucha": 2, "Veneno": 2, "Psíquico": 0.5, "Oscuro": 0, "Acero": 0.5},
+    "Bicho": {"Fuego": 0.5, "Planta": 2, "Lucha": 0.5, "Veneno": 0.5, "Volador": 0.5, "Psíquico": 2, "Fantasma": 0.5, "Oscuro": 2, "Acero": 0.5, "Hada": 0.5},
+    "Roca": {"Fuego": 2, "Hielo": 2, "Lucha": 0.5, "Tierra": 0.5, "Volador": 2, "Bicho": 2, "Acero": 0.5},
+    "Fantasma": {"Normal": 0, "Psíquico": 2, "Fantasma": 2, "Oscuro": 0.5},
+    "Dragón": {"Dragón": 2, "Acero": 0.5, "Hada": 0},
+    "Oscuro": {"Lucha": 0.5, "Psíquico": 2, "Fantasma": 2, "Oscuro": 0.5, "Hada": 0.5},
+    "Acero": {"Fuego": 0.5, "Agua": 0.5, "Eléctrico": 0.5, "Hielo": 2, "Roca": 2, "Acero": 0.5, "Hada": 2},
+    "Hada": {"Fuego": 0.5, "Lucha": 2, "Veneno": 0.5, "Dragón": 2, "Oscuro": 2, "Acero": 0.5}
+}
+
+lista_tipos = sorted(list(tablas_tipos.keys()))
+
+c1, c2 = st.columns(2)
+with c1:
+    t1 = st.selectbox("Tipo 1", lista_tipos)
+with c2:
+    t2 = st.selectbox("Tipo 2 (Opcional)", ["Ninguno"] + lista_tipos)
+
+# Lógica para calcular multiplicadores
+defensas = {tipo: 1.0 for tipo in lista_tipos}
+
+for atacante in lista_tipos:
+    # Daño contra el primer tipo
+    mod1 = tablas_tipos[atacante].get(t1, 1.0)
+    # Daño contra el segundo tipo (si existe)
+    mod2 = 1.0
+    if t2 != "Ninguno":
+        mod2 = tablas_tipos[atacante].get(t2, 1.0)
+    
+    defensas[atacante] = mod1 * mod2
+
+# Mostrar resultados ordenados
+st.write(f"Resultados para: **{t1}**" + (f" / **{t2}**" if t2 != "Ninguno" else ""))
+
+debiles_x4 = [t for t, v in defensas.items() if v == 4]
+debiles_x2 = [t for t, v in defensas.items() if v == 2]
+resistentes_x05 = [t for t, v in defensas.items() if v == 0.5]
+resistentes_x025 = [t for t, v in defensas.items() if v == 0.25]
+inmunes = [t for t, v in defensas.items() if v == 0]
+
+# Usamos columnas de colores para que se vea profesional
+res_cols = st.columns(3)
+with res_cols[0]:
+    if debiles_x4: st.error(f"❌ Super Débil (x4): {', '.join(debiles_x4)}")
+    if debiles_x2: st.warning(f"⚠️ Débil (x2): {', '.join(debiles_x2)}")
+with res_cols[1]:
+    if resistentes_x05: st.success(f"🛡️ Resistente (x0.5): {', '.join(resistentes_x05)}")
+    if resistentes_x025: st.info(f"💎 Muy Resistente (x0.25): {', '.join(resistentes_x025)}")
+with res_cols[2]:
+    if inmunes: st.markdown(f"🚫 Inmune (x0): {', '.join(inmunes)}")         
